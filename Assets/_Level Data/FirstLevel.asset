@@ -13,3 +13,19 @@ MonoBehaviour:
   m_Name: FirstLevel
   m_EditorClassIdentifier: 
   gridSize: {x: 5, y: 5}
+  tilePrefabs:
+  - tilePrefab: {fileID: 3402538247041609964, guid: 1167568550ac0ef47932da8fce927b70,
+      type: 3}
+    probability: 0.2
+  - tilePrefab: {fileID: 3097377423269369480, guid: dd01c30dea23cd340a3dc792f6b9f6b6,
+      type: 3}
+    probability: 0.2
+  - tilePrefab: {fileID: 779665647436509175, guid: fb7f527a301ce2e46bd0eb033d39f42b,
+      type: 3}
+    probability: 0.2
+  - tilePrefab: {fileID: 7443502259882251682, guid: 1be6da778d22d2542a1cba32e1759e58,
+      type: 3}
+    probability: 0.2
+  - tilePrefab: {fileID: 539917653204703563, guid: 2b8d02b5ef717a745959edba66400a35,
+      type: 3}
+    probability: 0.25
