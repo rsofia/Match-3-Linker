@@ -15,19 +15,29 @@ public class GameManager : MonoBehaviour
     public Transform grid;
     [Tooltip("Space between tiles")]
     public float spaceBetween = 0.25f;
-    int[,] board;
+    [Tooltip("Where (y) will the tile fall from")]
+    public float startTilePosition;
+    [Tooltip("How fast will the tile fall")]
+    public float tileFallSpeed = 1;
+
+    BoardPiece[,] board;
     private bool canAdd = false; //can a new tile be selecter right now?
 
     [Header("Timers")]
     [Tooltip("Time in between tiles when merging")]
     public float timeMerge = 0.1f;
+    [Tooltip("Time in between old tiles collapsing and new ones appearing")]
+    public float timeForNew = 0.25f;
+
+    [Header("UI")]
+    public UIManager ui;
 
     private Stack<TileBase> order = new Stack<TileBase>();
 
-    private enum GridInfo
+    public enum GridInfo
     {
         Obstacle, //cannot detect input here
-        Playable //contains a tile
+        Playable //contains a normal tile
     }
 
     private void Awake()
@@ -35,7 +45,7 @@ public class GameManager : MonoBehaviour
         if (instance == null)
             instance = this;
 
-        board = new int[levelData.gridSize.x, levelData.gridSize.y];
+        board = new BoardPiece[levelData.gridSize.x, levelData.gridSize.y];
         CreateBoard();
     }
 
@@ -53,7 +63,6 @@ public class GameManager : MonoBehaviour
     private void CreateBoard()
     {
         canAdd = false;
-        GameObject prefab = levelData.tilePrefabs[0].tilePrefab; //will be the first by default
         for (int row = 0; row < levelData.gridSize.x; row++)
         {
 
@@ -61,30 +70,38 @@ public class GameManager : MonoBehaviour
             {
                 //for now, it will be a square grid, 
                 //TODO figure out how to make the levels uneven
-                board[row, col] = (int)GridInfo.Playable;
 
                 //Create different type of tiles following their odds
-                int odds = Random.Range(0, 1); //Spawn will be completely random
-                float prob = 0;
-                for(int i = 0; i < levelData.tilePrefabs.Length; i++)
-                {
-                    if(odds < ((levelData.tilePrefabs[i].probability + prob) * 10))
-                    {
-                        prefab = levelData.tilePrefabs[i].tilePrefab;
-                        break; //end cicle
-                    }
-                    else
-                    {
-                        //accumulated probability
-                        prob += levelData.tilePrefabs[i].probability;
-                    }
-                }
-               TileBase b = SimplePool.instance.Spawn(prefab, new Vector2(row + (spaceBetween * row), col + (spaceBetween * col))).GetComponent<TileBase>();
-                b.OnBegin(row, col);
+                CreateRandomTileAt(row, col);
                 
             }
         }
         canAdd = true;
+    }
+
+    private void CreateRandomTileAt(int row, int col)
+    {
+        float prob = 0;
+        GameObject prefab = levelData.tilePrefabs[Random.Range(0, levelData.tilePrefabs.Length)].tilePrefab; //will be the first by default
+        for (int i = 0; i < levelData.tilePrefabs.Length; i++)
+        {
+            int odds = Random.Range(0, 100); //Spawn will be completely random
+            if (odds < ((levelData.tilePrefabs[i].probability + prob) * 10))
+            {
+                prefab = levelData.tilePrefabs[i].tilePrefab;
+                break; //end cicle
+            }
+            else
+            {
+                //accumulated probability
+                prob += levelData.tilePrefabs[i].probability;
+            }
+        }
+        Vector2 goalPos = new Vector2(row + (spaceBetween * row), col + (spaceBetween * col));
+        Vector2 startPos = new Vector2(row, startTilePosition);
+        TileBase b = SimplePool.instance.Spawn(prefab, grid, startPos).GetComponent<TileBase>();
+        board[row, col] = new BoardPiece(GridInfo.Playable, b, goalPos);
+        b.OnBegin(row, col, startPos, goalPos);
     }
 
     #region SCORE
@@ -104,6 +121,7 @@ public class GameManager : MonoBehaviour
     public void AddScore(int valueToAdd)
     {
         score += valueToAdd;
+        ui.DisplayScore(score);
     }
     #endregion
 
@@ -154,9 +172,73 @@ public class GameManager : MonoBehaviour
         {
             TileBase tile = order.Pop();
             tile.OnMerge(index);
+            //remove from board
+            board[tile.row, tile.col].tile = null;
             yield return new WaitForSeconds(timeMerge);
         }
         canAdd = true;
+
+        StartCoroutine(Collapse());
+    }
+
+    /// <summary>
+    /// After a merge, collapse tiles
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator Collapse()
+    {
+        //recorrer todo el arreglo, de abajo para arriba
+        for(int row = 0; row < levelData.gridSize.x; row++)
+        {
+            for(int col = 0; col < levelData.gridSize.y; col++)
+            {
+                if (board[row, col] == null && board[row, col].info != GridInfo.Playable)
+                    continue;
+                if(board[row, col].tile == null)
+                {
+                    //collapse the whole column
+                    int current = col;
+                    do
+                    {
+                        int c = current + 1;
+                        if (c < levelData.gridSize.y)
+                        {
+                            if (board[row, c].tile != null)
+                            {
+                                board[row, col].tile = board[row, c].tile;
+                                board[row, col].tile.SetRowCol(row, col);
+                                board[row, col].tile.Fall(board[row, col].tile.transform.localPosition, board[row, col].pos);
+                                board[row, c].tile = null;
+                                break;
+                            }
+                            else
+                            {
+                                current++;
+                            }
+                        }
+                        else
+                            break;
+                    } while (board[row, col].tile == null);
+                }
+
+            }
+        }
+
+        yield return new WaitForSeconds(timeForNew);
+        //Add new pieces
+        for(int row = 0; row < levelData.gridSize.x; row++)
+        {
+            for(int col = 0; col < levelData.gridSize.y; col++)
+            {
+                //If it is indeed a playable are and it does not have a tile, create one
+                if(board[row, col].info == GridInfo.Playable && board[row, col].tile == null)
+                {
+                    CreateRandomTileAt(row, col);
+                }
+            }
+        }
+
+        yield return null;
     }
 
     /// <summary>
@@ -187,5 +269,18 @@ public class GameManager : MonoBehaviour
     }
 
 
+    private class BoardPiece
+    {
+        public GridInfo info;
+        public TileBase tile;
+        public Vector2 pos;
+
+        public BoardPiece(GridInfo info, TileBase tile, Vector2 pos) 
+        {
+            this.info = info;
+            this.tile = tile;
+            this.pos = pos;
+        }
+    }
 
 }

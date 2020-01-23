@@ -19,19 +19,20 @@ public class SimplePool : MonoBehaviour
         pool.Enqueue(obj);
     }
 
-    public GameObject Spawn(GameObject prefab, Vector2 position)
+    public GameObject Spawn(GameObject prefab, Transform parent, Vector2 position)
     {
         GameObject temp;
         if(pool.Count == 0)
         {
-            temp = Instantiate(prefab);
+            temp = Instantiate(prefab, parent);
         }
         else
         {
             temp = pool.Dequeue();
             temp.SetActive(true);
+            temp.transform.parent = parent;
         }
-        temp.transform.position = position;
+        temp.transform.localPosition = position;
         return temp;
     }
 }

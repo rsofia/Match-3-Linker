@@ -16,11 +16,21 @@ public class TileBase : MonoBehaviour
 
     private int score = 200;
     private int extraScore = 50; //extra score to add after 3 where selected
-    public ParticleSystem particleDisappear; //particles to play when tile is merged
     public GameObject goTile; //tile gamebject, with mesh
     public TileType type;
-
     public int row, col;
+
+    [Header("Particles")]
+    public ParticleSystem particleDisappear; //particles to play when tile is merged
+    [Tooltip("Adds a little extra time after the particles disappear to disable the tile")]
+    public float paritcleExtraTime = 0.1f;
+
+    [Header("UI")]
+    public TextMesh text;
+
+    [Header("Animation")]
+    private bool isFalling = false;
+
     [HideInInspector]
     public LineRenderer line;
 
@@ -29,15 +39,51 @@ public class TileBase : MonoBehaviour
         line = GetComponent<LineRenderer>();
     }
 
-    public virtual void OnBegin(int r, int c)
+    public void SetRowCol(int r, int c)
     {
         row = r; col = c;
-        Debug.Log("On Begin");
-        gameObject.SetActive(true);
-        particleDisappear.Stop();
     }
 
-    private void OnMouseEnter()
+    /// <summary>
+    /// Function to initialize our tile
+    /// </summary>
+    /// <param name="r"></param>
+    /// <param name="c"></param>
+    public virtual void OnBegin(int r, int c, Vector2 startPos, Vector2 goalPos)
+    {
+        row = r; col = c;
+        gameObject.SetActive(true);
+        particleDisappear.Stop();
+        text.text = "";
+        goTile.gameObject.SetActive(true);
+
+        //FALL TO POSITION
+        Fall(startPos, goalPos);
+    }
+
+    public void Fall(Vector2 startPos, Vector2 goalPos)
+    {
+        transform.localPosition = startPos;
+        if (!isFalling)
+            StartCoroutine(Fall(goalPos, GameManager.instance.tileFallSpeed));
+    }
+
+    IEnumerator Fall(Vector2 goalPos, float speed, float minDistance = 0.2f,float deltaTime = 0.1f)
+    {
+        isFalling = true;
+        float t = 0;
+        do
+        {
+           // float yPos = curve.Evaluate(t);
+            transform.position = Vector3.Lerp(transform.localPosition, goalPos, t);
+            yield return new WaitForSeconds(deltaTime);
+            t += deltaTime; //add the time
+
+        } while (Vector2.Distance(transform.localPosition, goalPos) > minDistance); //run until the time of the last frame
+        isFalling = false;
+    }
+
+    private void OnMouseOver()
     {
         if(Input.GetMouseButton(0) || (Input.touchCount > 0))
             GameManager.instance.AddToStack(this);
@@ -46,32 +92,34 @@ public class TileBase : MonoBehaviour
 
     /// <summary>
     /// Called when they merge. 
-    /// Stack index = order in which it was sellected
+    /// Stack index = order in which it was selected
     /// </summary>
     /// <param name="stackIndex"></param>
     public virtual void OnMerge(int stackIndex)
     {
-        Debug.Log("On merge");
         if (stackIndex < GameManager.minToConnect)
+        {
+            text.text = Helper.NumberToString(score);
             GameManager.instance.AddScore(score);
+        }
         else
         {
             //add extra score if the line is bigger than 3
             int tomultiply = (stackIndex / GameManager.minToConnect);
             int extra = extraScore * tomultiply;
-            Debug.Log("Extra score: " + extra + " from index " + stackIndex);
+            text.text = Helper.NumberToString(score + extra);
             GameManager.instance.AddScore(score + extra);
         }
         StartCoroutine(Die());
    }
-
-
+    
     private IEnumerator Die()
     {
         goTile.SetActive(false);
+        line.SetPosition(1, Vector3.zero);
         particleDisappear.Play();
-        //waits until the partycle sistem has finished playing
-        yield return new WaitForSeconds(particleDisappear.time);
+        //waits until the particle system has finished playing
+        yield return new WaitForSeconds(particleDisappear.main.duration+paritcleExtraTime);
         gameObject.SetActive(false);
         //Return to pool
         SimplePool.instance.InsertToQueue(gameObject);
