@@ -8,8 +8,14 @@ public class UIManager : MonoBehaviour
     [Header("Score")]
     public Text score;
     public AnimationCurve scoreAnimIn;
-    private bool isOnLerp = false;
+    private bool txtIsOnLerp = false;
 
+    [Header("Replay")]
+    public Button btnReplay;
+    public AnimationCurve replayAnim;
+    private bool btnReplayIsOnLerp = false;
+
+    
     /// <summary>
     /// Displays the score on UI. Calls text zoom in animation.
     /// </summary>
@@ -19,8 +25,15 @@ public class UIManager : MonoBehaviour
         score.text = "$" + Helper.NumberToString(s); //formar with thousands separator
 
         //make sure to only run once until it's over
-        if(!isOnLerp)
+        if(!txtIsOnLerp)
             StartCoroutine(LerpSize(scoreAnimIn, score.rectTransform));
+    }
+
+    public void Replay()
+    {
+        if (!btnReplayIsOnLerp)
+            StartCoroutine(LerpSize(replayAnim, btnReplay.GetComponent<RectTransform>()));
+        StartCoroutine(GameManager.instance.Replay());
     }
 
     /// <summary>
@@ -32,7 +45,7 @@ public class UIManager : MonoBehaviour
     /// <returns></returns>
     IEnumerator LerpSize(AnimationCurve curve, RectTransform rect, float deltaTime = 0.01f)
     {
-        isOnLerp = true;
+        txtIsOnLerp = true;
         float t = 0;
         do
         {
@@ -42,6 +55,7 @@ public class UIManager : MonoBehaviour
             t += deltaTime; //add the time
 
         } while (t < curve[curve.length-1].time); //run until the time of the last frame
-        isOnLerp = false;
+        txtIsOnLerp = false;
     }
+
 }

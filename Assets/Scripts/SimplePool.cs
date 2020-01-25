@@ -4,33 +4,43 @@ using UnityEngine;
 
 public class SimplePool : MonoBehaviour
 {
-    Queue<GameObject> pool;
+    List<TileBase> pool;
     public static SimplePool instance;
 
     private void Awake()
     {
-        pool = new Queue<GameObject>();
+        pool = new List<TileBase>();
         if(instance == null)
             instance = this;
     }
 
-    public void InsertToQueue(GameObject obj)
+    public void Insert(TileBase obj)
     {
-        pool.Enqueue(obj);
+        pool.Add(obj);
     }
 
-    public GameObject Spawn(GameObject prefab, Transform parent, Vector2 position)
+    public TileBase Spawn(GameObject prefab, Transform parent, Vector2 position)
     {
-        GameObject temp;
+        TileBase temp;
         if(pool.Count == 0)
         {
-            temp = Instantiate(prefab, parent);
+            temp = Instantiate(prefab, parent).GetComponent<TileBase>();
         }
         else
         {
-            temp = pool.Dequeue();
-            temp.SetActive(true);
-            temp.transform.parent = parent;
+            TileBase.TileType t = prefab.GetComponent<TileBase>().type;
+            temp = pool.Find(x => x.type == t);
+            if(temp == null)
+            {
+                temp = Instantiate(prefab, parent).GetComponent<TileBase>();
+            }
+            else
+            {
+                temp.gameObject.SetActive(true);
+                temp.transform.parent = parent;
+                pool.Remove(temp);
+            }
+            
         }
         temp.transform.localPosition = position;
         return temp;

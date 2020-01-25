@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum GridInfo
+{
+    Playable, //contains a normal tile
+    Obstacle //cannot detect input here
+}
+
 public class GameManager : MonoBehaviour
 {
     private int score;
@@ -34,11 +40,7 @@ public class GameManager : MonoBehaviour
 
     private LinkedList<TileBase> order = new LinkedList<TileBase>();
 
-    public enum GridInfo
-    {
-        Obstacle, //cannot detect input here
-        Playable //contains a normal tile
-    }
+   
 
     private void Awake()
     {
@@ -49,13 +51,31 @@ public class GameManager : MonoBehaviour
         CreateBoard();
     }
 
+    public IEnumerator Replay()
+    {
+        //clear board
+        for (int row = 0; row < levelData.gridSize.x; row++)
+        {
+
+            for (int col = 0; col < levelData.gridSize.y; col++)
+            {
+               StartCoroutine(board[row, col].tile.Die());
+            }
+        }
+        yield return new WaitForSeconds(0.5f);
+       score = 0;
+        ui.DisplayScore(0);
+        board = new BoardPiece[levelData.gridSize.x, levelData.gridSize.y];
+        CreateBoard();
+    }
+
     private void Update()
     {
         if(Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended))
         {
             if (order.Count >= minToConnect)
                 StartCoroutine(MergeTiles());
-            else
+            else 
                 ClearOrder();
         }
     }
@@ -68,12 +88,21 @@ public class GameManager : MonoBehaviour
 
             for (int col = 0; col < levelData.gridSize.y; col++)
             {
-                //for now, it will be a square grid, 
-                //TODO figure out how to make the levels uneven
+                //fill with regular tiles
+                if(levelData.boardInfo[levelData.GetIndex(row, col)] == GridInfo.Playable)
+                {
+                    //Create different type of tiles following their odds
+                    CreateRandomTileAt(row, col);
+                }
+                //Fill with obstacle
+                else if (levelData.boardInfo[levelData.GetIndex(row, col)] == GridInfo.Obstacle)
+                {
+                    CreateObstacle(row, col);
+                }
 
-                //Create different type of tiles following their odds
-                CreateRandomTileAt(row, col);
-                
+
+
+
             }
         }
         canAdd = true;
@@ -82,13 +111,15 @@ public class GameManager : MonoBehaviour
     private void CreateRandomTileAt(int row, int col)
     {
         float prob = 0;
-        GameObject prefab = levelData.tilePrefabs[Random.Range(0, levelData.tilePrefabs.Length)].tilePrefab; //will be the first by default
+        int index = Random.Range(0, levelData.tilePrefabs.Length);
+        //GameObject prefab = levelData.tilePrefabs[Random.Range(0, levelData.tilePrefabs.Length)].tilePrefab; //will be the first by default
         for (int i = 0; i < levelData.tilePrefabs.Length; i++)
         {
             int odds = Random.Range(0, 100); //Spawn will be completely random
             if (odds < ((levelData.tilePrefabs[i].probability + prob) * 10))
             {
-                prefab = levelData.tilePrefabs[i].tilePrefab;
+                index = i;
+                //= levelData.tilePrefabs[i].tilePrefab;
                 break; //end cicle
             }
             else
@@ -99,10 +130,22 @@ public class GameManager : MonoBehaviour
         }
         Vector2 goalPos = new Vector2(row + (spaceBetween * row), col + (spaceBetween * col));
         Vector2 startPos = new Vector2(row, startTilePosition);
-        TileBase b = SimplePool.instance.Spawn(prefab, grid, startPos).GetComponent<TileBase>();
+        TileBase b = SimplePool.instance.Spawn(levelData.tilePrefabs[index].tilePrefab,grid, startPos).GetComponent<TileBase>();
         board[row, col] = new BoardPiece(GridInfo.Playable, b, goalPos);
         b.OnBegin(row, col, startPos, goalPos);
     }
+
+    private void CreateObstacle(int row, int col)
+    {
+        GameObject prefab = levelData.obstacle.tilePrefab;
+        Vector2 goalPos = new Vector2(row + (spaceBetween * row), col + (spaceBetween * col));
+        Vector2 startPos = new Vector2(row, startTilePosition);
+        TileBase b = SimplePool.instance.Spawn(prefab, grid, startPos).GetComponent<TileBase>();
+        board[row, col] = new BoardPiece(GridInfo.Obstacle, b, goalPos);
+        b.OnBegin(row, col, startPos, goalPos);
+    }
+
+    
 
     #region SCORE
     /// <summary>
@@ -133,7 +176,7 @@ public class GameManager : MonoBehaviour
     {
         if (!canAdd)
             return;
-        //If the stack is empty, add anything
+        //If the list is empty, add anything
         if(order.Count == 0)
         {
             order.AddLast(tile);
@@ -145,19 +188,30 @@ public class GameManager : MonoBehaviour
                                 (tile.col <= (order.Last.Value.col + 1) && tile.col >= (order.Last.Value.col - 1));
             if (order.Last.Value.type == tile.type && !order.Contains(tile) && isAdjacent)
             {
-                //TODO DISPLAY CONNECTION
+                //DISPLAY CONNECTION
                 //draw line renderer to here
                 TileBase prev = order.Last.Value;
                 int x = tile.row - prev.row;
                 int y = tile.col - prev.col;
-    
-                prev.line.SetPosition(1, new Vector3(x, y, 0));
 
-                //Insert in stack
+                prev.SetLine(x, y);
+
+                //Insert
                 order.AddLast(tile);
+            }
+            //if the tile we are trying to add is the same as the second to last, remove the last one
+            //a.k.a. retracing
+            else if(order.Last.Previous != null &&  tile == order.Last.Previous.Value)
+            {
+                //reset lines
+                order.Last.Value.ResetLine();
+                order.Last.Previous.Value.ResetLine();
+                order.RemoveLast();
             }
         }
     }
+
+    
 
     /// <summary>
     /// Merge the tiles and Remove everything from the LinkedList.
@@ -184,7 +238,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// After a merge, collapse tiles
+    /// After a merge, collapse tiles. And then add new pieces.
     /// </summary>
     /// <returns></returns>
     public IEnumerator Collapse()
@@ -194,7 +248,7 @@ public class GameManager : MonoBehaviour
         {
             for(int col = 0; col < levelData.gridSize.y; col++)
             {
-                if (board[row, col] == null && board[row, col].info != GridInfo.Playable)
+                if (board[row, col] == null)// || board[row, col].info != GridInfo.Playable)
                     continue;
                 if(board[row, col].tile == null)
                 {
@@ -232,8 +286,7 @@ public class GameManager : MonoBehaviour
         {
             for(int col = 0; col < levelData.gridSize.y; col++)
             {
-                //If it is indeed a playable are and it does not have a tile, create one
-                if(board[row, col].info == GridInfo.Playable && board[row, col].tile == null)
+                if(board[row, col].tile == null)
                 {
                     CreateRandomTileAt(row, col);
                 }
@@ -256,19 +309,14 @@ public class GameManager : MonoBehaviour
         {
             TileBase tile = order.Last.Value;
             order.RemoveLast();
-            tile.line.SetPosition(1, Vector3.zero); //reset line
+            tile.ResetLine();
         }
         canAdd = true;
     }
-
-    public int OrderCount()
-    {
-        return order.Count;
-    }
-
     
-
-
+    /// <summary>
+    /// Class to create the board and holds its info
+    /// </summary>
     private class BoardPiece
     {
         public GridInfo info;
