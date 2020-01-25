@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public UIManager ui;
 
-    private Stack<TileBase> order = new Stack<TileBase>();
+    private LinkedList<TileBase> order = new LinkedList<TileBase>();
 
     public enum GridInfo
     {
@@ -136,31 +136,31 @@ public class GameManager : MonoBehaviour
         //If the stack is empty, add anything
         if(order.Count == 0)
         {
-            order.Push(tile);
+            order.AddLast(tile);
         }
         else
         {
             //Only add if they are the same type and if it's not already here and it's ajacent
-            bool isAdjacent = (tile.row <= (order.Peek().row + 1) && tile.row >= (order.Peek().row - 1)) &&
-                                (tile.col <= (order.Peek().col + 1) && tile.col >= (order.Peek().col - 1));
-            if (order.Peek().type == tile.type && !order.Contains(tile) && isAdjacent)
+            bool isAdjacent = (tile.row <= (order.Last.Value.row + 1) && tile.row >= (order.Last.Value.row - 1)) &&
+                                (tile.col <= (order.Last.Value.col + 1) && tile.col >= (order.Last.Value.col - 1));
+            if (order.Last.Value.type == tile.type && !order.Contains(tile) && isAdjacent)
             {
                 //TODO DISPLAY CONNECTION
                 //draw line renderer to here
-                TileBase prev = OrderPeek();
+                TileBase prev = order.Last.Value;
                 int x = tile.row - prev.row;
                 int y = tile.col - prev.col;
     
                 prev.line.SetPosition(1, new Vector3(x, y, 0));
 
                 //Insert in stack
-                order.Push(tile);
+                order.AddLast(tile);
             }
         }
     }
 
     /// <summary>
-    /// Remove everything from stack.
+    /// Merge the tiles and Remove everything from the LinkedList.
     /// </summary>
     public IEnumerator MergeTiles()
     {
@@ -170,8 +170,10 @@ public class GameManager : MonoBehaviour
 
        for(int i = 0; i < count; i++, index--)
         {
-            TileBase tile = order.Pop();
-            tile.OnMerge(index);
+            //Start Removing from the first to the last
+            TileBase tile = order.First.Value;
+            order.RemoveFirst();
+            tile.OnMerge(i);
             //remove from board
             board[tile.row, tile.col].tile = null;
             yield return new WaitForSeconds(timeMerge);
@@ -248,11 +250,12 @@ public class GameManager : MonoBehaviour
     {
         canAdd = false;
         int count = order.Count;
-        int index = count;
+        // int index = count;
 
-        for (int i = 0; i < count; i++, index--)
+        for (int i = 0; i < count; i++)
         {
-            TileBase tile = order.Pop();
+            TileBase tile = order.Last.Value;
+            order.RemoveLast();
             tile.line.SetPosition(1, Vector3.zero); //reset line
         }
         canAdd = true;
@@ -263,10 +266,7 @@ public class GameManager : MonoBehaviour
         return order.Count;
     }
 
-    public TileBase OrderPeek()
-    {
-        return order.Peek();
-    }
+    
 
 
     private class BoardPiece

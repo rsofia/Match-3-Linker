@@ -80,6 +80,7 @@ public class TileBase : MonoBehaviour
             t += deltaTime; //add the time
 
         } while (Vector2.Distance(transform.localPosition, goalPos) > minDistance); //run until the time of the last frame
+        transform.localPosition = goalPos; //make sure its a the position we want it to 
         isFalling = false;
     }
 
