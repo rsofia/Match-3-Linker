@@ -4,12 +4,31 @@ Works on mobile.
 
 ### Made with Unity 2019.2.17f
 
-### Game View
+### Game Description
+The board is represented as a grid, and could be of various sizes. The size of the grid is determined by the ScriptableObject LevelData.
+
+There are 5 different colors of tiles, and there's an extra one (the black one), which is an obstacle. The obstacle falls down and behaves like a tile, but it cannot be merged. 
+
+Tiles can be liked veritically, diagonally and horizontally. 
+
+Three or more tiles make a match. The match is made when the cursor (or touch) is lifted. 
+
+When tiles are matched, they are removed from the board. The board pieces then fall down on the empty spots, and new tiles arrive from the top. 
+
+The game is over when X points are made (it's 3,500 points for now, but can be changed inside the inspector).
+
+When either the Replay or Play Again buttons are pressed, the score is erased and a new match begins. 
+
+#### Game View
 
 Here's a screenshot of the game view. 
 Everything is made with Unity built-in tools. No plugins were used.
 
 ![GameView](https://github.com/rsofia/Match-3-Linker/blob/master/ReadMeContent/GameView.JPG)
+
+And a GIF with gameplay:
+
+![GameplayView](https://github.com/rsofia/Match-3-Linker/blob/master/ReadMeContent/Match3Gameplay.gif)
 
 Easy to create and modify levels.
 -------------
