@@ -34,7 +34,7 @@ public class LevelData : ScriptableObject
 
     public int GetIndex(int row, int col)
     {
-        return (gridSize.y * col + row);
+        return  ((row * (gridSize.y)) + col);
     }
 
     public void SetBoard(int x, int y)

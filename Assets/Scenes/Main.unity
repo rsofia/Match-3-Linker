@@ -1839,7 +1839,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelData: {fileID: 11400000, guid: 9858f14d84904d84abefe72d6b14af42, type: 2}
-  scoreGoal: 2000
+  scoreGoal: 3500
   grid: {fileID: 1423743415}
   spaceBetween: 0.35
   startTilePosition: 10

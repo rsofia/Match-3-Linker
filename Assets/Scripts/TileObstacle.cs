@@ -12,6 +12,6 @@ public class TileObstacle : TileBase
 
     protected override void OnMouseOver()
     {
-        //do nothing
+        //do nothing because obstacles cannot be merged.
     }
 }

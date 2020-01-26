@@ -133,8 +133,8 @@ public class GameManager : MonoBehaviour
                 prob += levelData.tilePrefabs[i].probability;
             }
         }
-        Vector2 goalPos = new Vector2(row + (spaceBetween * row), col + (spaceBetween * col));
-        Vector2 startPos = new Vector2(row, startTilePosition);
+        Vector2 goalPos = new Vector2(col + (spaceBetween * col), row + (spaceBetween * row));
+        Vector2 startPos = new Vector2(col, startTilePosition);
         TileBase b = SimplePool.instance.Spawn(levelData.tilePrefabs[index].tilePrefab,grid, startPos).GetComponent<TileBase>();
         board[row, col] = new BoardPiece(GridInfo.Playable, b, goalPos);
         b.OnBegin(row, col, startPos, goalPos);
@@ -143,8 +143,8 @@ public class GameManager : MonoBehaviour
     private void CreateObstacle(int row, int col)
     {
         GameObject prefab = levelData.obstacle.tilePrefab;
-        Vector2 goalPos = new Vector2(row + (spaceBetween * row), col + (spaceBetween * col));
-        Vector2 startPos = new Vector2(row, startTilePosition);
+        Vector2 goalPos = new Vector2(col + (spaceBetween * col), row + (spaceBetween * row));
+        Vector2 startPos = new Vector2(col, startTilePosition);
         TileBase b = SimplePool.instance.Spawn(prefab, grid, startPos).GetComponent<TileBase>();
         board[row, col] = new BoardPiece(GridInfo.Obstacle, b, goalPos);
         b.OnBegin(row, col, startPos, goalPos);
@@ -202,8 +202,8 @@ public class GameManager : MonoBehaviour
                 //DISPLAY CONNECTION
                 //draw line renderer to here
                 TileBase prev = order.Last.Value;
-                int x = tile.row - prev.row;
-                int y = tile.col - prev.col;
+                int y = tile.row - prev.row;
+                int x = tile.col - prev.col;
 
                 prev.SetLine(x, y);
 
@@ -264,18 +264,18 @@ public class GameManager : MonoBehaviour
                 if(board[row, col].tile == null)
                 {
                     //collapse the whole column
-                    int current = col;
+                    int current = row;
                     do
                     {
-                        int c = current + 1;
-                        if (c < levelData.gridSize.y)
+                        int r = current + 1;
+                        if (r < levelData.gridSize.x)
                         {
-                            if (board[row, c].tile != null)
+                            if (board[r, col].tile != null)
                             {
-                                board[row, col].tile = board[row, c].tile;
+                                board[row, col].tile = board[r, col].tile;
                                 board[row, col].tile.SetRowCol(row, col);
                                 board[row, col].tile.Fall(board[row, col].tile.transform.localPosition, board[row, col].pos);
-                                board[row, c].tile = null;
+                                board[r, col].tile = null;
                                 break;
                             }
                             else
