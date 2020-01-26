@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(Animator))]
 public class TileBase : MonoBehaviour
 {
     public enum TileType
@@ -32,12 +33,14 @@ public class TileBase : MonoBehaviour
     [Header("Animation")]
     private bool isFalling = false;
 
-    [HideInInspector]
-    public LineRenderer line;
+    private LineRenderer line;
+    private Animator anim;
+    private const string triggerBoing = "Boing";
 
     private void Awake()
     {
         line = GetComponent<LineRenderer>();
+        anim = GetComponent<Animator>();
     }
 
     public void SetRowCol(int r, int c)
@@ -47,7 +50,7 @@ public class TileBase : MonoBehaviour
 
     protected virtual void OnMouseOver()
     {
-        if (Input.GetMouseButton(0) || (Input.touchCount > 0))
+        if ((Input.GetMouseButton(0) || (Input.touchCount > 0)) && !GameManager.instance.isGameOver)
             GameManager.instance.AddToStack(this);
     }
 
@@ -131,12 +134,13 @@ public class TileBase : MonoBehaviour
     {
         isFalling = true;
         float t = 0;
+        anim.SetTrigger(triggerBoing);
         do
         {
            // float yPos = curve.Evaluate(t);
             transform.position = Vector3.Lerp(transform.localPosition, goalPos, t);
             yield return new WaitForSeconds(deltaTime);
-            t += deltaTime; //add the time
+            t += deltaTime * speed; //add the time
 
         } while (Vector2.Distance(transform.localPosition, goalPos) > minDistance); //run until the time of the last frame
         transform.localPosition = goalPos; //make sure its a the position we want it to 

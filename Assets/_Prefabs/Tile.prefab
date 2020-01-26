@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8560799569820018789}
   - component: {fileID: 6802670041422159996}
   - component: {fileID: 2022182325409128671}
+  - component: {fileID: 4122417868778119049}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -55,30 +56,6 @@ MonoBehaviour:
   particleDisappear: {fileID: 8712543082738174799}
   paritcleExtraTime: 0.5
   text: {fileID: 3167726544110221704}
-  fallCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   line: {fileID: 0}
 --- !u!65 &6802670041422159996
 BoxCollider:
@@ -189,6 +166,25 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 0
   m_Loop: 0
+--- !u!95 &4122417868778119049
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3485222519789469649}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e42d0a735bf11fd44846e9a02cb77f32, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &5291281523030758026
 GameObject:
   m_ObjectHideFlags: 0

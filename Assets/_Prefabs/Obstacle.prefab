@@ -4993,6 +4993,7 @@ GameObject:
   - component: {fileID: 5037065299071876704}
   - component: {fileID: 298175417254513578}
   - component: {fileID: 5067843390096853769}
+  - component: {fileID: -2442414569454419798}
   m_Layer: 0
   m_Name: Obstacle
   m_TagString: Untagged
@@ -5036,7 +5037,6 @@ MonoBehaviour:
   particleDisappear: {fileID: 2498811078620225689}
   paritcleExtraTime: 0.1
   text: {fileID: 8192788965667803742}
-  line: {fileID: 0}
 --- !u!65 &298175417254513578
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5146,3 +5146,22 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 0
   m_Loop: 0
+--- !u!95 &-2442414569454419798
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7645242725081764871}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e42d0a735bf11fd44846e9a02cb77f32, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

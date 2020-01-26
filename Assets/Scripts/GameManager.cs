@@ -8,6 +8,7 @@ public enum GridInfo
     Obstacle //cannot detect input here
 }
 
+
 public class GameManager : MonoBehaviour
 {
     private int score;
@@ -16,6 +17,9 @@ public class GameManager : MonoBehaviour
 
 
     public LevelData levelData;
+
+    [Header("Game Goal")]
+    public int scoreGoal = 1000;
 
     [Header("Board")]
     public Transform grid;
@@ -40,6 +44,8 @@ public class GameManager : MonoBehaviour
 
     private LinkedList<TileBase> order = new LinkedList<TileBase>();
 
+    [HideInInspector]
+    public bool isGameOver = false; //can the game keep going?
    
 
     private void Awake()
@@ -51,7 +57,10 @@ public class GameManager : MonoBehaviour
         CreateBoard();
     }
 
-    public IEnumerator Replay()
+    /// <summary>
+    /// Reloads game and resets score.
+    /// </summary>
+    public void Replay()
     {
         //clear board
         for (int row = 0; row < levelData.gridSize.x; row++)
@@ -62,8 +71,8 @@ public class GameManager : MonoBehaviour
                StartCoroutine(board[row, col].tile.Die());
             }
         }
-        yield return new WaitForSeconds(0.5f);
-       score = 0;
+
+        score = 0;
         ui.DisplayScore(0);
         board = new BoardPiece[levelData.gridSize.x, levelData.gridSize.y];
         CreateBoard();
@@ -83,6 +92,7 @@ public class GameManager : MonoBehaviour
     private void CreateBoard()
     {
         canAdd = false;
+        ui.SetGoal("get a score of: " + Helper.NumberToString(scoreGoal));
         for (int row = 0; row < levelData.gridSize.x; row++)
         {
 
@@ -99,27 +109,22 @@ public class GameManager : MonoBehaviour
                 {
                     CreateObstacle(row, col);
                 }
-
-
-
-
             }
         }
         canAdd = true;
+        isGameOver = false;
     }
 
     private void CreateRandomTileAt(int row, int col)
     {
         float prob = 0;
         int index = Random.Range(0, levelData.tilePrefabs.Length);
-        //GameObject prefab = levelData.tilePrefabs[Random.Range(0, levelData.tilePrefabs.Length)].tilePrefab; //will be the first by default
         for (int i = 0; i < levelData.tilePrefabs.Length; i++)
         {
             int odds = Random.Range(0, 100); //Spawn will be completely random
             if (odds < ((levelData.tilePrefabs[i].probability + prob) * 10))
             {
                 index = i;
-                //= levelData.tilePrefabs[i].tilePrefab;
                 break; //end cicle
             }
             else
@@ -165,6 +170,12 @@ public class GameManager : MonoBehaviour
     {
         score += valueToAdd;
         ui.DisplayScore(score);
+
+        if(score >= scoreGoal)
+        {
+            ui.UnlockGoal(score);
+            isGameOver = true;
+        }
     }
     #endregion
 
