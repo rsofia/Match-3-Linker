@@ -2,7 +2,7 @@
 Quick match 3 linker game. 
 Works on mobile. 
 
-### Made with Unity 2019.2.17f
+### Made with Unity 2021.1.7f1
 
 ### Game Description
 The board is represented as a grid, and could be of various sizes. The size of the grid is determined by the ScriptableObject LevelData.
@@ -22,7 +22,7 @@ When either the Replay or Play Again buttons are pressed, the score is erased an
 #### Game View
 
 Here's a screenshot of the game view. 
-Everything is made with Unity built-in tools. No plugins were used.
+It was originally made with only Unity built-in tools. However, this branch has been updated to use some packages, like TextMeshPro. 
 
 ![GameView](https://github.com/rsofia/Match-3-Linker/blob/master/ReadMeContent/GameView.JPG)
 
@@ -33,7 +33,7 @@ And a GIF with gameplay:
 Easy to create and modify levels.
 -------------
 Using ScriptableObjects, you can have a board of any size by simply modifying the GridSize variable for rows and columns. 
-You can also insert the type of tile in the array, which for the moment can be either Playabler or Obstacle (the obstacle is like a tile, 
+You can also insert the type of tile in the array, which for the moment can be either Playable or Obstacle (the obstacle is like a tile, 
 but you can't merge it).
 Each level can also have different types of tiles, and a different obstacle. Just assign the prefab to the corresponding slot. 
 

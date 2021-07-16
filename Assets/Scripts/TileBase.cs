@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
@@ -28,7 +29,7 @@ public class TileBase : MonoBehaviour
     public float paritcleExtraTime = 0.1f;
 
     [Header("UI")]
-    public TextMesh text;
+    public TextMeshPro text;
 
     [Header("Animation")]
     private bool isFalling = false;

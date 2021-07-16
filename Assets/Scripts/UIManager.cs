@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,14 +9,14 @@ public class UIManager : MonoBehaviour
     public Image backgroud;
     [Header("Score")]
     public AnimUI scoreAnim;
-    public Text score;
+    public TextMeshProUGUI score;
 
     [Header("Replay")]
     public AnimUI replayAnim;
 
     [Header("Goal")]
-    public Text goalDisplay;
-    public Text txtYourScore;
+    public TextMeshProUGUI goalDisplay;
+    public TextMeshProUGUI txtYourScore;
     public AnimUI goalUnlockedAnim;
 
     [Header("Quit")]
