@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,12 @@ public class SimplePool : MonoBehaviour
         pool = new List<TileBase>();
         if(instance == null)
             instance = this;
+    }
+
+    private void Start()
+    {
+        //instantite as many objects as the total size of the grid specified by the Game Manager
+        
     }
 
     public void Insert(TileBase obj)
